@@ -1,0 +1,131 @@
+package com.online.mrytlebeach.activity;
+
+import java.util.ArrayList;
+
+import com.online.mrytlebeach.domain.PartnerDomain;
+import com.online.mrytlebeach.model.customer.Address;
+import com.online.mrytlebeach.model.customer.AddressImpl;
+import com.online.mrytlebeach.model.partner.Partner;
+import com.online.mrytlebeach.model.partner.PartnerImpl;
+import com.online.mrytlebeach.model.partnerReport.PartnerReport;
+import com.online.mrytlebeach.representation.generic.GenericResponse;
+import com.online.mrytlebeach.representation.generic.Link;
+import com.online.mrytlebeach.representation.partner.PartnerRepresentation;
+import com.online.mrytlebeach.representation.partner.PartnerRequest;
+import com.online.mrytlebeach.representation.partnerReport.PartnerReportRepresentation;
+import com.online.mrytlebeach.util.Constant;
+
+/**
+ * Interacts with partner model and domain business logic to create and modify partner representations
+ *
+ */
+
+public class PartnerActivity {
+	
+	/**
+	 * Creates a partner representation for a specific partner, including details like address, name, email, etc. 
+	 * @param partnerRequest 	imported from the ProductRepresentation class
+	 * @return genericResponse 	success or failure message
+	 */
+
+	public GenericResponse createPartner(PartnerRequest partnerRequest) {
+		int partnerID = 0;
+		GenericResponse genericResponse = new GenericResponse();
+		PartnerDomain partnerDomain = new PartnerDomain();
+		Partner partner = new PartnerImpl();
+		Address partnerAddress = new AddressImpl();
+		
+		partnerAddress.setLine1(partnerRequest.getLine1());
+		partnerAddress.setLine2(partnerRequest.getLine2());
+		partnerAddress.setLine3(partnerRequest.getLine3());
+		partnerAddress.setCity(partnerRequest.getCity());
+		partnerAddress.setState(partnerRequest.getState());
+		partnerAddress.setCountry(partnerRequest.getCountry());
+		partnerAddress.setZip(partnerRequest.getZip());
+		
+		partner.setActive(partnerRequest.isActive());
+		partner.setContactName(partnerRequest.getContactName());
+		partner.setEmail(partnerRequest.getEmail());
+		partner.setPartnerName(partnerRequest.getPartnerName());
+		partner.setPassword(partnerRequest.getPassword());
+		partner.setPhone(partnerRequest.getPhone());
+		
+		partnerID = partnerDomain.addPartner(partner, partnerAddress);
+		if(partnerID != 0){
+			genericResponse.setMessage("Partner is created");
+			genericResponse.setSuccess(true);
+			genericResponse.setGenericReturnValue( Integer.toString( partnerID ) );
+			Link get = new Link("Get Partner Details", Constant.LSM_COMMON_URL + "/partner/" + partnerID, "application/xml");
+			genericResponse.setLinks(get);
+		}else{
+			genericResponse.setMessage("Partner is not created");
+			genericResponse.setSuccess(false);
+		}
+		
+		return genericResponse;
+	}
+	
+	/**
+	 * Deletes a partner representation for a specific partner
+	 * @param partnerIDString
+	 * @return isPartnerDeleted 	bool that is true if deletePartner is successful
+	 */
+	
+	public boolean deletePartner(String partnerIDString) {
+		boolean isPartnerDeleted = false;
+		PartnerDomain partnerDomain = new PartnerDomain();
+		isPartnerDeleted = partnerDomain.deletePartner(Integer.parseInt(partnerIDString));
+		
+		return isPartnerDeleted;
+	}
+	
+	/**
+	 * Builds a partner representation for a specific partner
+	 * @param partnerIDString
+	 * @return partnerRepresentation
+	 */
+	
+	public PartnerRepresentation getPartnerDetails(String partnerIDString){
+		PartnerDomain partnerDomain = new PartnerDomain();
+		Partner partner = new PartnerImpl();
+		partner = partnerDomain.getPartnerByID(Integer.parseInt(partnerIDString)); 
+		PartnerRepresentation partnerRepresentation = new PartnerRepresentation();
+		partnerRepresentation.setActive(partner.isActive()); //is this correct?
+		partnerRepresentation.setPartnerName(partner.getPartnerName());
+		partnerRepresentation.setContactName(partner.getContactName());
+		partnerRepresentation.setAddressID(partner.getAddressID());
+		partnerRepresentation.setPartnerID(partner.getPartnerID());
+		partnerRepresentation.setEmail(partner.getEmail());
+		partnerRepresentation.setPhone(partner.getPhone());
+		
+		return partnerRepresentation;
+	}
+	
+	/**
+	 * Builds a report representation for a specific partner
+	 * @param partnerID
+	 * @return reports
+	 */
+	public ArrayList<PartnerReportRepresentation> getPartnerReport( int partnerID ) {
+		PartnerDomain partnerDomain = new PartnerDomain();
+		ArrayList<PartnerReport> report = partnerDomain.generatePartnerReport( partnerID );
+		ArrayList<PartnerReportRepresentation> reports = new ArrayList<PartnerReportRepresentation>();
+		
+		int size = report.size();
+		for(int i=0; i < size; i++){
+			PartnerReportRepresentation partnerReport = new PartnerReportRepresentation();
+			partnerReport.setProductId( report.get(i).getProductId() );
+			partnerReport.setQuantity( report.get(i).getQuantity() );
+			partnerReport.setCost( report.get(i).getCost() );
+			partnerReport.setPrice( report.get(i).getPrice() );
+			partnerReport.setTotalCost( report.get(i).getTotalCost() );
+			partnerReport.setTotalPrice( report.get(i).getTotalPrice() );
+			partnerReport.setTotalProfit( report.get(i).getTotalProfit() );
+			
+			reports.add(partnerReport);
+		}		
+		
+
+		return reports;
+	}
+}

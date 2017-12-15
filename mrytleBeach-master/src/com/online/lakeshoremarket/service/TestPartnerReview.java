@@ -1,0 +1,29 @@
+package com.online.mrytlebeach.service;
+
+import com.online.mrytlebeach.domain.ReviewDomain;
+import com.online.mrytlebeach.model.review.Review;
+import com.online.mrytlebeach.model.review.ReviewImpl;
+
+public class TestPartnerReview {
+
+	public static void main(String[] args) {
+
+		Review review = new ReviewImpl();
+		review.setCustomerID(1);
+		review.setPartnerID(2);
+		review.setRating(10);
+		review.setReview("Amazing seller. Delivery was on time and the product was genuine. Bought other products from this seller"
+				+ " and I must say all of them are upto the highest standards. The best part is that no other seller can beat their "
+				+ " discounted pricing. AWESOME!!!!!!!");
+		
+		int partnerReviewID = 0;
+		ReviewDomain reviewDomain = new ReviewDomain();
+		partnerReviewID = reviewDomain.addPartnerReview(review);
+		if(0 != partnerReviewID){
+			System.out.println("Partner Review is successfully added into the system.");
+		}else{
+			System.out.println("Partner Review is NOT added into the system");
+		}
+	}
+
+}
